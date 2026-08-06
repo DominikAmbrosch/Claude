@@ -1,0 +1,43 @@
+name: Lint
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y shellcheck
+          npm install -g markdownlint-cli
+
+      - name: Shellcheck
+        run: |
+          shellcheck install.sh
+          shellcheck scripts/detect-providers.sh
+          shellcheck scripts/council-simulation-checklist.sh
+
+      - name: Markdownlint
+        # Rule selection lives in .markdownlint.json. The previous inline
+        # --disable invocation was missing the trailing "--" that the variadic
+        # flag requires, so it swallowed the file arguments and this step
+        # silently linted nothing.
+        run: |
+          markdownlint --config .markdownlint.json \
+            README.md CONTRIBUTING.md CHANGELOG.md CLAUDE.md \
+            SKILL.md SKILL.codex.md SKILL.gemini.md \
+            "agents/**/*.md" \
+            "demos/**/*.md"
+
+      - name: Council simulation checklist (drift guard)
+        run: ./scripts/council-simulation-checklist.sh
