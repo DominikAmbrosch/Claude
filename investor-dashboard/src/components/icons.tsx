@@ -109,3 +109,16 @@ export const ArrowDownIcon = (props: IconProps) => (
     <path d="M12 5v14M5 12l7 7 7-7" />
   </svg>
 );
+
+export const UploadIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M12 16V4m0 0-4 4m4-4 4 4M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+  </svg>
+);
+
+export const FileIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6" />
+  </svg>
+);

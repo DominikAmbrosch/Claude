@@ -13,6 +13,7 @@
   "dependencies": {
     "html2canvas-pro": "^2.3.3",
     "jspdf": "^4.2.1",
+    "pdfjs-dist": "^6.2.108",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "recharts": "^3.10.1"

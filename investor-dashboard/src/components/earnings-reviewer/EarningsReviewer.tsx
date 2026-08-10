@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useAppStore } from '../../store/AppStore';
 import { analyzeEarningsCall } from '../../utils/earningsAnalysis';
 import { downloadTextFile } from '../../utils/pdfExport';
+import { readTranscriptFile, SUPPORTED_TRANSCRIPT_EXTENSIONS } from '../../utils/fileImport';
 import { formatDate } from '../../utils/formatters';
-import { MicIcon, DownloadIcon, TrashIcon } from '../icons';
+import { MicIcon, DownloadIcon, TrashIcon, UploadIcon, FileIcon } from '../icons';
 import type { EarningsAnalysis } from '../../types';
 
 const SAMPLE_TRANSCRIPT = `Guten Tag und willkommen zu unserem Earnings Call für das dritte Quartal. Unser CEO wird zunächst die strategischen Highlights vorstellen, bevor unser CFO auf die Finanzzahlen eingeht.
@@ -56,6 +57,36 @@ export function EarningsReviewer() {
   const [transcript, setTranscript] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<EarningsAnalysis | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [fileLoading, setFileLoading] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFile(file: File) {
+    setFileError(null);
+    setFileLoading(true);
+    try {
+      const text = await readTranscriptFile(file);
+      if (!text.trim()) {
+        setFileError('Aus dieser Datei konnte kein Text extrahiert werden (evtl. gescanntes PDF ohne Textebene).');
+        return;
+      }
+      setTranscript(text);
+      setFileName(file.name);
+    } catch (err) {
+      setFileError(err instanceof Error ? err.message : 'Datei konnte nicht gelesen werden.');
+    } finally {
+      setFileLoading(false);
+    }
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setDragActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
+  }
 
   async function handleAnalyze() {
     if (!transcript.trim()) return;
@@ -78,11 +109,59 @@ export function EarningsReviewer() {
             <label className="label">Ticker (optional)</label>
             <input className="input" value={ticker} onChange={(e) => setTicker(e.target.value.toUpperCase())} placeholder="z.B. SAP" />
           </div>
-          <label className="label">Transkript oder Meldungstext</label>
+          <label className="label">Datei hochladen</label>
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragActive(true);
+            }}
+            onDragLeave={() => setDragActive(false)}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed px-4 py-5 text-center transition-colors ${
+              dragActive
+                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
+                : 'border-slate-300 hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-600'
+            }`}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={SUPPORTED_TRANSCRIPT_EXTENSIONS.join(',')}
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleFile(file);
+                e.target.value = '';
+              }}
+            />
+            {fileLoading ? (
+              <p className="text-xs text-slate-500 dark:text-slate-400">Datei wird gelesen…</p>
+            ) : fileName ? (
+              <p className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-200">
+                <FileIcon className="h-4 w-4 flex-shrink-0" />
+                {fileName}
+              </p>
+            ) : (
+              <>
+                <UploadIcon className="h-5 w-5 text-slate-400" />
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Datei hierher ziehen oder <span className="text-indigo-600 dark:text-indigo-400">durchsuchen</span>
+                </p>
+                <p className="text-[11px] text-slate-400 dark:text-slate-600">{SUPPORTED_TRANSCRIPT_EXTENSIONS.join(', ')}</p>
+              </>
+            )}
+          </div>
+          {fileError && <p className="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{fileError}</p>}
+
+          <label className="label mt-3">Transkript oder Meldungstext</label>
           <textarea
             value={transcript}
-            onChange={(e) => setTranscript(e.target.value)}
-            rows={16}
+            onChange={(e) => {
+              setTranscript(e.target.value);
+              setFileName(null);
+            }}
+            rows={12}
             className="input font-mono text-xs leading-relaxed"
             placeholder="Earnings-Call-Transkript oder Text der Meldung hier einfügen…"
           />
@@ -91,7 +170,13 @@ export function EarningsReviewer() {
               <MicIcon className="h-4 w-4" />
               {loading ? 'Analysiere…' : 'Analysieren'}
             </button>
-            <button className="btn-secondary" onClick={() => setTranscript(SAMPLE_TRANSCRIPT)}>
+            <button
+              className="btn-secondary"
+              onClick={() => {
+                setTranscript(SAMPLE_TRANSCRIPT);
+                setFileName(null);
+              }}
+            >
               Beispiel laden
             </button>
           </div>
