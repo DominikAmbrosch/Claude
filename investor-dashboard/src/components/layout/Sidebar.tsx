@@ -21,7 +21,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between px-5 py-5">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-lg shadow-indigo-500/30">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-600 text-sm font-bold text-white shadow-lg shadow-indigo-500/30">
             IQ
           </div>
           <div>

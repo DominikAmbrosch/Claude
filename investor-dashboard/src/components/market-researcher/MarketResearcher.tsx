@@ -167,8 +167,8 @@ export function MarketResearcher() {
               <LineChart data={profile.history}>
                 <defs>
                   <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6366f1" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#0a84ff" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#0a84ff" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.15} vertical={false} />
@@ -179,7 +179,7 @@ export function MarketResearcher() {
                   labelFormatter={(label) => formatDate(label as string)}
                   contentStyle={{ fontSize: 12, borderRadius: 8 }}
                 />
-                <Line type="monotone" dataKey="close" stroke="#6366f1" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="close" stroke="#0a84ff" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>

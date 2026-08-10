@@ -187,7 +187,7 @@ export function ModelBuilder() {
                 <Tooltip formatter={(v) => formatCurrency(Number(v))} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                   {chartData.map((_, i) => (
-                    <Cell key={i} fill={i === 0 ? '#94a3b8' : i === 1 ? '#6366f1' : '#10b981'} />
+                    <Cell key={i} fill={i === 0 ? '#8e8e93' : i === 1 ? '#0a84ff' : '#34c759'} />
                   ))}
                 </Bar>
               </BarChart>
@@ -219,10 +219,10 @@ export function ModelBuilder() {
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} width={70} />
                 <Tooltip formatter={(v) => formatCurrency(Number(v))} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-                <ReferenceLine y={inputs.currentPrice} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: 'Aktueller Kurs', fontSize: 11, fill: '#f59e0b', position: 'insideTopLeft' }} />
+                <ReferenceLine y={inputs.currentPrice} stroke="#ff9500" strokeDasharray="4 4" label={{ value: 'Aktueller Kurs', fontSize: 11, fill: '#ff9500', position: 'insideTopLeft' }} />
                 <Bar dataKey="fairValue" radius={[6, 6, 0, 0]}>
                   {scenarios.map((s, i) => (
-                    <Cell key={i} fill={s.name === 'Bear Case' ? '#f43f5e' : s.name === 'Bull Case' ? '#10b981' : '#6366f1'} />
+                    <Cell key={i} fill={s.name === 'Bear Case' ? '#ff3b30' : s.name === 'Bull Case' ? '#34c759' : '#0a84ff'} />
                   ))}
                 </Bar>
               </BarChart>
@@ -263,7 +263,7 @@ export function ModelBuilder() {
                     <td className="p-1.5 font-medium text-slate-500 dark:text-slate-400">{sensitivity.waccSteps[ri].toFixed(1)}%</td>
                     {row.map((value, ci) => {
                       const ratio = maxSensitivity === minSensitivity ? 0.5 : (value - minSensitivity) / (maxSensitivity - minSensitivity);
-                      const bg = `rgba(99, 102, 241, ${0.08 + ratio * 0.35})`;
+                      const bg = `rgba(10, 132, 255, ${0.08 + ratio * 0.35})`;
                       const isCenter = ri === 2 && ci === 2;
                       return (
                         <td
