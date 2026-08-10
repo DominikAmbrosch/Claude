@@ -1,4 +1,4 @@
-import type { EarningsAnalysis } from '../types';
+import type { EarningsAnalysis, EarningsStatement, FinancialMetrics } from '../types';
 
 const POSITIVE_WORDS = [
   'stark', 'starkes', 'starken', 'wachstum', 'rekord', 'übertroffen', 'übertrifft', 'optimistisch',
@@ -66,6 +66,48 @@ function pickTop(sentences: string[], keywords: string[], limit: number): string
   return unique.slice(0, limit);
 }
 
+function sentenceTone(sentence: string): EarningsStatement['tone'] {
+  const { positive, negative } = scoreSentimentWords(sentence);
+  if (negative > positive) return 'negative';
+  if (positive > 0 && positive >= negative) return 'positive';
+  return 'warning';
+}
+
+function tagStatements(sentences: string[]): EarningsStatement[] {
+  return sentences.map((text) => ({ text, tone: sentenceTone(text) }));
+}
+
+const METRIC_UNIT = '(?:Milliarden|Mrd\\.?|Millionen|Mio\\.?|billion|bn|million|mn)';
+const CURRENCY = '(?:€|EUR|USD|\\$)?';
+
+function extractMetric(text: string, keywords: string[]): string | null {
+  // Word-boundaried keyword (so "umsatz" doesn't match inside "Umsatzwachstum") and a
+  // mandatory magnitude unit (so it doesn't grab an unrelated bare number/percentage).
+  const pattern = new RegExp(
+    `\\b(?:${keywords.join('|')})\\b[^.]{0,50}?${CURRENCY}\\s*(\\d+(?:[.,]\\d+)?)\\s*(${METRIC_UNIT})\\s*${CURRENCY}`,
+    'i',
+  );
+  const match = text.match(pattern);
+  if (!match) return null;
+  const [, value, unit] = match;
+  return `${value} ${unit.replace(/\.$/, '')}`;
+}
+
+function extractGrowthMetric(text: string): string | null {
+  const pattern = /(?:wachstum|growth|gewachsen|grew|stieg|increased)[^.]{0,40}?(\d+(?:[.,]\d+)?)\s*(?:%|prozent|percent)/i;
+  const match = text.match(pattern);
+  return match ? `${match[1]}%` : null;
+}
+
+function extractFinancialMetrics(text: string): FinancialMetrics {
+  return {
+    revenue: extractMetric(text, ['umsatz', 'erlöse', 'revenue', 'net sales']),
+    ebit: extractMetric(text, ['ebit', 'operatives ergebnis', 'operating income']),
+    netIncome: extractMetric(text, ['nettoergebnis', 'jahresüberschuss', 'net income', 'nettogewinn']),
+    growth: extractGrowthMetric(text),
+  };
+}
+
 /**
  * Local heuristic NLP fallback (no external calls, works fully offline).
  * If VITE_EARNINGS_ANALYSIS_ENDPOINT is configured, that endpoint (e.g. a
@@ -111,7 +153,8 @@ function analyzeLocally(transcript: string, ticker?: string): EarningsAnalysis {
     createdAt: new Date().toISOString(),
     ticker,
     sourceExcerpt: transcript.slice(0, 400),
-    keyMessages: keyMessages.length ? keyMessages : fallbackMessages,
+    keyMessages: tagStatements(keyMessages.length ? keyMessages : fallbackMessages),
+    metrics: extractFinancialMetrics(transcript),
     financialHighlights: financialHighlights.length ? financialHighlights : ['Keine expliziten Finanzkennzahlen im Text gefunden.'],
     guidance: guidance.length ? guidance : ['Keine explizite Guidance im Text gefunden.'],
     managementTone,
@@ -134,7 +177,15 @@ export async function analyzeEarningsCall(transcript: string, ticker?: string): 
       });
       if (response.ok) {
         const data = await response.json();
-        return { ...data, id: data.id ?? `analysis-${Date.now()}`, createdAt: new Date().toISOString() };
+        return {
+          ...data,
+          id: data.id ?? `analysis-${Date.now()}`,
+          createdAt: new Date().toISOString(),
+          metrics: data.metrics ?? { revenue: null, ebit: null, netIncome: null, growth: null },
+          keyMessages: Array.isArray(data.keyMessages)
+            ? data.keyMessages.map((m: unknown) => (typeof m === 'string' ? { text: m, tone: 'warning' } : m))
+            : [],
+        };
       }
     } catch {
       // fall through to local heuristic on any network/endpoint failure

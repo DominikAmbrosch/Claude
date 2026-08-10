@@ -38,13 +38,22 @@ export function buildPortfolioSummary(holdings: PortfolioHolding[], profiles: Re
   return { totalValue, totalCost, totalPlAbs, totalPlPct, holdings: withWeights };
 }
 
-export function aggregateBy(holdings: HoldingWithProfile[], key: 'sector' | 'country'): { name: string; value: number }[] {
-  const map = new Map<string, number>();
+export interface AllocationSlice {
+  name: string;
+  value: number;
+  positions: { ticker: string; value: number }[];
+}
+
+export function aggregateBy(holdings: HoldingWithProfile[], key: 'sector' | 'country'): AllocationSlice[] {
+  const map = new Map<string, AllocationSlice>();
   for (const h of holdings) {
     const label = (key === 'sector' ? h.sector ?? h.profile?.sector : h.country ?? h.profile?.country) ?? 'Unbekannt';
-    map.set(label, (map.get(label) ?? 0) + h.currentValue);
+    const slice = map.get(label) ?? { name: label, value: 0, positions: [] };
+    slice.value += h.currentValue;
+    slice.positions.push({ ticker: h.ticker, value: h.currentValue });
+    map.set(label, slice);
   }
-  return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
+  return Array.from(map.values());
 }
 
 function dailyReturns(series: number[]): number[] {

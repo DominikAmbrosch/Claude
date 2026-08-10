@@ -118,6 +118,66 @@ function toSummary(result: DcfResult, currentPrice: number) {
   };
 }
 
+export interface ComparablesResult {
+  projectedEps: number;
+  fairValue: number;
+  buyBelowPrice: number;
+  upsidePct: number;
+  recommendation: Recommendation;
+}
+
+/**
+ * Comparable Company Analysis: projects EPS forward five years at the
+ * given growth rate, then applies the (peer/target) P/E multiple to it.
+ */
+export function runComparables(inputs: ValuationInputs): ComparablesResult {
+  const { epsBase, growth5y, peRatio, currentPrice, marginOfSafety } = inputs;
+  const projectedEps = epsBase * Math.pow(1 + growth5y / 100, 5);
+  const fairValue = projectedEps * peRatio;
+  const buyBelowPrice = fairValue * (1 - marginOfSafety / 100);
+  const upsidePct = ((fairValue - currentPrice) / currentPrice) * 100;
+
+  let recommendation: Recommendation = 'Halten';
+  if (currentPrice <= buyBelowPrice) recommendation = 'Kaufen';
+  else if (currentPrice >= fairValue * 1.1) recommendation = 'Verkaufen';
+
+  return { projectedEps, fairValue, buyBelowPrice, upsidePct, recommendation };
+}
+
+export interface DdmResult {
+  d1: number;
+  fairValue: number;
+  buyBelowPrice: number;
+  upsidePct: number;
+  recommendation: Recommendation;
+  valid: boolean;
+}
+
+/**
+ * Dividend Discount Model (Gordon Growth): fair value = next year's
+ * dividend / (discount rate - dividend growth rate). Best suited for
+ * stable dividend payers; breaks down when growth approaches the
+ * discount rate, which is flagged via `valid`.
+ */
+export function runDdm(inputs: ValuationInputs): DdmResult {
+  const { dividendPerShare, dividendGrowthRate, wacc, currentPrice, marginOfSafety } = inputs;
+  const r = wacc / 100;
+  const g = dividendGrowthRate / 100;
+  const d1 = dividendPerShare * (1 + g);
+  const valid = r > g && dividendPerShare > 0;
+  const fairValue = valid ? d1 / (r - g) : 0;
+  const buyBelowPrice = fairValue * (1 - marginOfSafety / 100);
+  const upsidePct = valid ? ((fairValue - currentPrice) / currentPrice) * 100 : 0;
+
+  let recommendation: Recommendation = 'Halten';
+  if (valid) {
+    if (currentPrice <= buyBelowPrice) recommendation = 'Kaufen';
+    else if (currentPrice >= fairValue * 1.1) recommendation = 'Verkaufen';
+  }
+
+  return { d1, fairValue, buyBelowPrice, upsidePct, recommendation, valid };
+}
+
 export function runSensitivity(inputs: ValuationInputs): { waccSteps: number[]; growthSteps: number[]; grid: number[][] } {
   const waccSteps = [-2, -1, 0, 1, 2].map((d) => Math.max(2, inputs.wacc + d));
   const growthSteps = [-4, -2, 0, 2, 4].map((d) => Math.max(-10, inputs.growth5y + d));

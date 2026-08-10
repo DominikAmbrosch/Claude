@@ -52,6 +52,7 @@ interface AppStoreValue extends PersistedState {
   saveValuationModel: (model: ValuationModel) => void;
   deleteValuationModel: (id: string) => void;
   addHolding: (holding: PortfolioHolding) => void;
+  updateHolding: (id: string, updates: Partial<Omit<PortfolioHolding, 'id'>>) => void;
   removeHolding: (id: string) => void;
   setCashAdded: (v: number) => void;
   saveEarningsAnalysis: (analysis: EarningsAnalysis) => void;
@@ -105,7 +106,24 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         })),
       deleteValuationModel: (id) =>
         setState((s) => ({ ...s, valuationModels: s.valuationModels.filter((m) => m.id !== id) })),
-      addHolding: (holding) => setState((s) => ({ ...s, holdings: [...s.holdings, holding] })),
+      addHolding: (holding) =>
+        setState((s) => {
+          const existing = s.holdings.find((h) => h.ticker === holding.ticker);
+          if (!existing) return { ...s, holdings: [...s.holdings, holding] };
+          // Same ticker already held: merge into a weighted-average cost position
+          // instead of a second row, mirroring how brokers report one position per stock.
+          const totalShares = existing.shares + holding.shares;
+          const avgBuyPrice = (existing.shares * existing.buyPrice + holding.shares * holding.buyPrice) / totalShares;
+          const earliestBuyDate = existing.buyDate < holding.buyDate ? existing.buyDate : holding.buyDate;
+          return {
+            ...s,
+            holdings: s.holdings.map((h) =>
+              h.id === existing.id ? { ...h, shares: totalShares, buyPrice: avgBuyPrice, buyDate: earliestBuyDate } : h,
+            ),
+          };
+        }),
+      updateHolding: (id, updates) =>
+        setState((s) => ({ ...s, holdings: s.holdings.map((h) => (h.id === id ? { ...h, ...updates } : h)) })),
       removeHolding: (id) => setState((s) => ({ ...s, holdings: s.holdings.filter((h) => h.id !== id) })),
       setCashAdded: (v) => setState((s) => ({ ...s, cashAdded: v })),
       saveEarningsAnalysis: (analysis) =>

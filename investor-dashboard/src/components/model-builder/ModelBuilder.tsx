@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
 import { useAppStore } from '../../store/AppStore';
 import { getStockProfile } from '../../data/mockStocks';
-import type { ValuationInputs, ValuationModel } from '../../types';
-import { runDcf, runScenarios, runSensitivity } from '../../utils/dcf';
+import type { ValuationInputs, ValuationModel, ValuationMethod } from '../../types';
+import { runDcf, runScenarios, runSensitivity, runComparables, runDdm } from '../../utils/dcf';
 import { formatCurrency, formatPercent } from '../../utils/formatters';
 import { exportElementToPdf } from '../../utils/pdfExport';
-import { DownloadIcon, TrashIcon } from '../icons';
+import { DownloadIcon, TrashIcon, SlidersIcon } from '../icons';
 
 const DEFAULT_INPUTS: ValuationInputs = {
   ticker: 'SAP',
@@ -21,6 +21,8 @@ const DEFAULT_INPUTS: ValuationInputs = {
   marginOfSafety: 20,
   epsBase: 8.1,
   terminalGrowth: 2.5,
+  dividendPerShare: 1.85,
+  dividendGrowthRate: 3,
 };
 
 const RECOMMENDATION_STYLES: Record<string, string> = {
@@ -29,11 +31,19 @@ const RECOMMENDATION_STYLES: Record<string, string> = {
   Verkaufen: 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400',
 };
 
+const METHOD_TABS: { id: ValuationMethod; label: string }[] = [
+  { id: 'dcf', label: 'DCF' },
+  { id: 'comparables', label: 'Comparables' },
+  { id: 'ddm', label: 'Dividend Discount' },
+];
+
 function loadFromTicker(ticker: string): ValuationInputs {
   const profile = getStockProfile(ticker);
+  const price = profile.price;
+  const estimatedDividend = Math.max(0, (price * profile.fundamentals.dividendYield) / 100);
   return {
     ticker: profile.ticker,
-    currentPrice: profile.price,
+    currentPrice: price,
     peRatio: profile.fundamentals.peRatio,
     psRatio: profile.fundamentals.psRatio,
     debtToEquity: profile.fundamentals.debtToEquity,
@@ -42,8 +52,10 @@ function loadFromTicker(ticker: string): ValuationInputs {
     growth10y: Math.max(1, profile.fundamentals.epsGrowthYoY * 0.5),
     wacc: 8,
     marginOfSafety: 20,
-    epsBase: Math.max(0.1, profile.price / profile.fundamentals.peRatio),
+    epsBase: Math.max(0.1, price / profile.fundamentals.peRatio),
     terminalGrowth: 2.5,
+    dividendPerShare: Math.round(estimatedDividend * 100) / 100,
+    dividendGrowthRate: 3,
   };
 }
 
@@ -51,6 +63,7 @@ export function ModelBuilder() {
   const { openInModelBuilder, clearOpenInModelBuilder, saveValuationModel, valuationModels, deleteValuationModel } = useAppStore();
   const [inputs, setInputs] = useState<ValuationInputs>(DEFAULT_INPUTS);
   const [modelName, setModelName] = useState('Mein Bewertungsmodell');
+  const [method, setMethod] = useState<ValuationMethod>('dcf');
 
   useEffect(() => {
     if (openInModelBuilder) {
@@ -63,6 +76,8 @@ export function ModelBuilder() {
   const dcf = useMemo(() => runDcf(inputs), [inputs]);
   const scenarios = useMemo(() => runScenarios(inputs), [inputs]);
   const sensitivity = useMemo(() => runSensitivity(inputs), [inputs]);
+  const comparables = useMemo(() => runComparables(inputs), [inputs]);
+  const ddm = useMemo(() => runDdm(inputs), [inputs]);
 
   function update<K extends keyof ValuationInputs>(key: K, value: ValuationInputs[K]) {
     setInputs((prev) => ({ ...prev, [key]: value }));
@@ -122,14 +137,24 @@ export function ModelBuilder() {
         </div>
 
         <div className="card p-5">
-          <h3 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">Wachstum & Diskontierung</h3>
-          <div className="space-y-3">
-            <NumberField label="Gewinnwachstum 3 Jahre (%)" value={inputs.growth3y} onChange={(v) => update('growth3y', v)} step={0.5} />
-            <NumberField label="Gewinnwachstum 5 Jahre (%)" value={inputs.growth5y} onChange={(v) => update('growth5y', v)} step={0.5} />
-            <NumberField label="Gewinnwachstum 10 Jahre (%)" value={inputs.growth10y} onChange={(v) => update('growth10y', v)} step={0.5} />
-            <NumberField label="Terminal-Wachstum (%)" value={inputs.terminalGrowth} onChange={(v) => update('terminalGrowth', v)} step={0.25} />
-            <NumberField label="Diskontierungssatz / WACC (%)" value={inputs.wacc} onChange={(v) => update('wacc', v)} step={0.25} />
-            <NumberField label="Sicherheitsmarge (%)" value={inputs.marginOfSafety} onChange={(v) => update('marginOfSafety', v)} step={1} />
+          <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+            <SlidersIcon className="h-4 w-4" /> Wachstum & Diskontierung
+          </h3>
+          <div className="space-y-4">
+            <SliderField label="Gewinnwachstum 3 Jahre" value={inputs.growth3y} onChange={(v) => update('growth3y', v)} min={-10} max={40} step={0.5} />
+            <SliderField label="Gewinnwachstum 5 Jahre" value={inputs.growth5y} onChange={(v) => update('growth5y', v)} min={-10} max={30} step={0.5} />
+            <SliderField label="Gewinnwachstum 10 Jahre" value={inputs.growth10y} onChange={(v) => update('growth10y', v)} min={-5} max={20} step={0.5} />
+            <SliderField label="Terminal-Wachstum" value={inputs.terminalGrowth} onChange={(v) => update('terminalGrowth', v)} min={0} max={5} step={0.25} />
+            <SliderField label="Diskontierungssatz / WACC" value={inputs.wacc} onChange={(v) => update('wacc', v)} min={3} max={15} step={0.25} />
+            <SliderField label="Sicherheitsmarge" value={inputs.marginOfSafety} onChange={(v) => update('marginOfSafety', v)} min={0} max={50} step={1} />
+          </div>
+        </div>
+
+        <div className="card p-5">
+          <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">Dividende (für Dividend Discount Model)</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <NumberField label="Dividende / Aktie" value={inputs.dividendPerShare} onChange={(v) => update('dividendPerShare', v)} step={0.05} />
+            <NumberField label="Dividendenwachstum (%)" value={inputs.dividendGrowthRate} onChange={(v) => update('dividendGrowthRate', v)} step={0.25} />
           </div>
         </div>
 
@@ -159,6 +184,31 @@ export function ModelBuilder() {
 
       {/* Results */}
       <div id="model-builder-results" className="min-w-0 space-y-6 bg-slate-50 dark:bg-slate-950">
+        <div className="flex gap-1.5 rounded-xl bg-slate-100 p-1 dark:bg-slate-900">
+          {METHOD_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setMethod(tab.id)}
+              className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                method === tab.id
+                  ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+                  : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {method === 'comparables' && (
+          <ComparablesPanel inputs={inputs} result={comparables} onExport={() => exportElementToPdf('model-builder-results', `${inputs.ticker}-comparables.pdf`)} />
+        )}
+        {method === 'ddm' && (
+          <DdmPanel inputs={inputs} result={ddm} onExport={() => exportElementToPdf('model-builder-results', `${inputs.ticker}-ddm.pdf`)} />
+        )}
+
+        {method === 'dcf' && (
+        <>
         <div className="card p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -281,7 +331,160 @@ export function ModelBuilder() {
             </table>
           </div>
         </div>
+        </>
+        )}
       </div>
+    </div>
+  );
+}
+
+function ComparablesPanel({
+  inputs,
+  result,
+  onExport,
+}: {
+  inputs: ValuationInputs;
+  result: ReturnType<typeof runComparables>;
+  onExport: () => void;
+}) {
+  return (
+    <div className="card p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Empfehlung für {inputs.ticker}</p>
+          <span className={`badge mt-1 !text-sm ${RECOMMENDATION_STYLES[result.recommendation]}`}>{result.recommendation}</span>
+        </div>
+        <div className="text-right">
+          <p className="text-xs text-slate-500 dark:text-slate-400">Fair Value (Comparables)</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(result.fairValue)}</p>
+          <p className={`text-sm font-medium ${result.upsidePct >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+            {formatPercent(result.upsidePct)} vs. aktuellem Kurs
+          </p>
+        </div>
+        <button className="btn-secondary" onClick={onExport}>
+          <DownloadIcon className="h-4 w-4" />
+          Als PDF exportieren
+        </button>
+      </div>
+
+      <p className="mt-4 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+        Comparable Company Analysis: Der EPS-Basiswert ({formatCurrency(inputs.epsBase)}) wird mit dem 5-Jahres-Wachstum von{' '}
+        {formatPercent(inputs.growth5y, 1)} fünf Jahre in die Zukunft projiziert und anschließend mit dem KGV von {inputs.peRatio}×
+        bewertet – so, wie es der Markt heute für vergleichbare Unternehmen zahlt.
+      </p>
+
+      <div className="mt-4 grid grid-cols-3 gap-3 text-center text-xs">
+        <div>
+          <p className="text-slate-400">EPS in 5 Jahren</p>
+          <p className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(result.projectedEps)}</p>
+        </div>
+        <div>
+          <p className="text-slate-400">Angewandtes KGV</p>
+          <p className="font-semibold text-slate-800 dark:text-slate-200">{inputs.peRatio}×</p>
+        </div>
+        <div>
+          <p className="text-slate-400">Kaufkurs (Sicherheitsmarge)</p>
+          <p className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(result.buyBelowPrice)}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DdmPanel({
+  inputs,
+  result,
+  onExport,
+}: {
+  inputs: ValuationInputs;
+  result: ReturnType<typeof runDdm>;
+  onExport: () => void;
+}) {
+  return (
+    <div className="card p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Empfehlung für {inputs.ticker}</p>
+          <span className={`badge mt-1 !text-sm ${RECOMMENDATION_STYLES[result.recommendation]}`}>{result.recommendation}</span>
+        </div>
+        <div className="text-right">
+          <p className="text-xs text-slate-500 dark:text-slate-400">Fair Value (Dividend Discount Model)</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">{result.valid ? formatCurrency(result.fairValue) : '–'}</p>
+          {result.valid && (
+            <p className={`text-sm font-medium ${result.upsidePct >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+              {formatPercent(result.upsidePct)} vs. aktuellem Kurs
+            </p>
+          )}
+        </div>
+        <button className="btn-secondary" onClick={onExport}>
+          <DownloadIcon className="h-4 w-4" />
+          Als PDF exportieren
+        </button>
+      </div>
+
+      {!result.valid ? (
+        <p className="mt-4 rounded-lg bg-amber-100 p-3 text-xs text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+          Das Dividend Discount Model liefert hier kein sinnvolles Ergebnis: entweder ist die Dividende je Aktie 0, oder das
+          Dividendenwachstum liegt über dem WACC. Dieses Modell eignet sich nur für etablierte, stabile Dividendenzahler mit
+          Wachstum &lt; Diskontierungssatz.
+        </p>
+      ) : (
+        <>
+          <p className="mt-4 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+            Gordon-Growth-Modell: Die für nächstes Jahr erwartete Dividende ({formatCurrency(result.d1)}) wird mit „Diskontierungssatz
+            minus Dividendenwachstum" ({formatPercent(inputs.wacc - inputs.dividendGrowthRate, 1)}) kapitalisiert – geeignet für
+            Dividenden-Aristokraten mit stabilem Ausschüttungswachstum.
+          </p>
+          <div className="mt-4 grid grid-cols-3 gap-3 text-center text-xs">
+            <div>
+              <p className="text-slate-400">Dividende (nächstes Jahr)</p>
+              <p className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(result.d1)}</p>
+            </div>
+            <div>
+              <p className="text-slate-400">Dividendenwachstum</p>
+              <p className="font-semibold text-slate-800 dark:text-slate-200">{formatPercent(inputs.dividendGrowthRate, 1)}</p>
+            </div>
+            <div>
+              <p className="text-slate-400">Kaufkurs (Sicherheitsmarge)</p>
+              <p className="font-semibold text-slate-800 dark:text-slate-200">{formatCurrency(result.buyBelowPrice)}</p>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function SliderField({
+  label,
+  value,
+  onChange,
+  min,
+  max,
+  step = 0.5,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  min: number;
+  max: number;
+  step?: number;
+}) {
+  return (
+    <div>
+      <div className="mb-1.5 flex items-center justify-between">
+        <label className="label !mb-0">{label}</label>
+        <span className="text-xs font-semibold tabular-nums text-slate-700 dark:text-slate-200">{value.toFixed(step < 1 ? 2 : 1)}%</span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={Number.isFinite(value) ? value : 0}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        className="w-full accent-indigo-600"
+      />
     </div>
   );
 }

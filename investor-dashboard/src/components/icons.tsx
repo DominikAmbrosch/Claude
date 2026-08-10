@@ -150,3 +150,39 @@ export const CalendarIcon = (props: IconProps) => (
     <path d="M3 9.5h18M8 2.5v4M16 2.5v4" />
   </svg>
 );
+
+export const EditIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+  </svg>
+);
+
+export const CopyIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <rect x="9" y="9" width="12" height="12" rx="2" />
+    <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
+  </svg>
+);
+
+export const ClockIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3.5 2" />
+  </svg>
+);
+
+export const CheckIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M20 6 9 17l-5-5" />
+  </svg>
+);
+
+export const SlidersIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M4 6h10M18 6h2M4 18h2M10 18h10M4 12h6M14 12h6" />
+    <circle cx="16" cy="6" r="2" />
+    <circle cx="8" cy="12" r="2" />
+    <circle cx="6" cy="18" r="2" />
+  </svg>
+);

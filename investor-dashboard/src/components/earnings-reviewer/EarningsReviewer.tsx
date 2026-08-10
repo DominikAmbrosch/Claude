@@ -1,15 +1,15 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useAppStore } from '../../store/AppStore';
 import { analyzeEarningsCall } from '../../utils/earningsAnalysis';
 import { downloadTextFile } from '../../utils/pdfExport';
 import { readTranscriptFile, SUPPORTED_TRANSCRIPT_EXTENSIONS } from '../../utils/fileImport';
 import { formatDate } from '../../utils/formatters';
-import { MicIcon, DownloadIcon, TrashIcon, UploadIcon, FileIcon } from '../icons';
+import { MicIcon, DownloadIcon, CopyIcon, CheckIcon, TrashIcon, UploadIcon, FileIcon, ArrowUpIcon, ArrowDownIcon } from '../icons';
 import type { EarningsAnalysis } from '../../types';
 
 const SAMPLE_TRANSCRIPT = `Guten Tag und willkommen zu unserem Earnings Call für das dritte Quartal. Unser CEO wird zunächst die strategischen Highlights vorstellen, bevor unser CFO auf die Finanzzahlen eingeht.
 
-Wir freuen uns, ein starkes Quartal mit Umsatzwachstum von 14 Prozent gegenüber dem Vorjahr zu berichten. Der Umsatz stieg auf 8,2 Milliarden Euro, angetrieben durch eine robuste Nachfrage im Cloud-Segment. Das EBIT verbesserte sich deutlich auf 1,4 Milliarden Euro, was einer Marge von 17 Prozent entspricht.
+Wir freuen uns, ein starkes Quartal mit Umsatzwachstum von 14 Prozent gegenüber dem Vorjahr zu berichten. Der Umsatz stieg auf 8,2 Milliarden Euro, angetrieben durch eine robuste Nachfrage im Cloud-Segment. Das EBIT verbesserte sich deutlich auf 1,4 Milliarden Euro, was einer Marge von 17 Prozent entspricht. Das Nettoergebnis lag bei 980 Millionen Euro.
 
 Das Management ist zuversichtlich für das Gesamtjahr und hebt die Guidance an: Wir erwarten nun ein Umsatzwachstum von 11 bis 13 Prozent für das Geschäftsjahr, gegenüber zuvor 9 bis 11 Prozent. Der freie Cashflow lag bei 950 Millionen Euro, ein Rekordwert für ein drittes Quartal.
 
@@ -26,15 +26,31 @@ const TONE_STYLES: Record<EarningsAnalysis['managementTone'], string> = {
   Pessimistisch: 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400',
 };
 
+const STATEMENT_EMOJI: Record<'positive' | 'warning' | 'negative', string> = {
+  positive: '✅',
+  warning: '⚠️',
+  negative: '📉',
+};
+
+function metricLine(label: string, value: string | null): string {
+  return `- ${label}: ${value ?? 'nicht im Text gefunden'}`;
+}
+
 function buildReportText(a: EarningsAnalysis): string {
   return `EARNINGS-ANALYSE ${a.ticker ? `– ${a.ticker}` : ''}
 Erstellt am: ${formatDate(a.createdAt)}
 Management-Tone: ${a.managementTone} (Score: ${a.toneScore})
 
-KEY MESSAGES
-${a.keyMessages.map((m) => `- ${m}`).join('\n')}
+KEY STATEMENTS
+${a.keyMessages.map((m) => `- [${m.tone}] ${m.text}`).join('\n')}
 
-FINANZIELLE HIGHLIGHTS
+FINANZIELLE KENNZAHLEN
+${metricLine('Umsatz', a.metrics.revenue)}
+${metricLine('EBIT', a.metrics.ebit)}
+${metricLine('Nettoergebnis', a.metrics.netIncome)}
+${metricLine('Wachstum', a.metrics.growth)}
+
+WEITERE FINANZ-ERWÄHNUNGEN
 ${a.financialHighlights.map((m) => `- ${m}`).join('\n')}
 
 GUIDANCE
@@ -51,6 +67,37 @@ ${a.investmentTakeaway}
 `;
 }
 
+function buildReportMarkdown(a: EarningsAnalysis): string {
+  const toneEmoji = { positive: '✅', warning: '⚠️', negative: '📉' } as const;
+  return `# Earnings-Analyse${a.ticker ? ` – ${a.ticker}` : ''}
+
+*Erstellt am ${formatDate(a.createdAt)} · Management-Tone: **${a.managementTone}** (Score: ${a.toneScore})*
+
+## Key Statements
+${a.keyMessages.map((m) => `- ${toneEmoji[m.tone]} ${m.text}`).join('\n')}
+
+## Finanzielle Kennzahlen
+| Kennzahl | Wert |
+| --- | --- |
+| Umsatz | ${a.metrics.revenue ?? '–'} |
+| EBIT | ${a.metrics.ebit ?? '–'} |
+| Nettoergebnis | ${a.metrics.netIncome ?? '–'} |
+| Wachstum | ${a.metrics.growth ?? '–'} |
+
+## Guidance
+${a.guidance.map((m) => `- ${m}`).join('\n')}
+
+## Risiken
+${a.risks.map((m) => `- ${m}`).join('\n')}
+
+## Chancen
+${a.opportunities.map((m) => `- ${m}`).join('\n')}
+
+## Investment-Einschätzung
+${a.investmentTakeaway}
+`;
+}
+
 export function EarningsReviewer() {
   const { earningsAnalyses, saveEarningsAnalysis, deleteEarningsAnalysis } = useAppStore();
   const [ticker, setTicker] = useState('');
@@ -61,7 +108,24 @@ export function EarningsReviewer() {
   const [fileLoading, setFileLoading] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const previousAnalysis = useMemo(() => {
+    if (!result?.ticker) return null;
+    return (
+      earningsAnalyses
+        .filter((a) => a.ticker === result.ticker && a.id !== result.id && a.createdAt < result.createdAt)
+        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))[0] ?? null
+    );
+  }, [earningsAnalyses, result]);
+
+  async function handleCopyMarkdown() {
+    if (!result) return;
+    await navigator.clipboard.writeText(buildReportMarkdown(result));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   async function handleFile(file: File) {
     setFileError(null);
@@ -224,15 +288,24 @@ export function EarningsReviewer() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">Management-Tone {result.ticker ? `· ${result.ticker}` : ''}</p>
-                  <span className={`badge mt-1 !text-sm ${TONE_STYLES[result.managementTone]}`}>{result.managementTone}</span>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className={`badge !text-sm ${TONE_STYLES[result.managementTone]}`}>{result.managementTone}</span>
+                    {previousAnalysis && <ToneTrend current={result.toneScore} previous={previousAnalysis.toneScore} />}
+                  </div>
                 </div>
-                <button
-                  className="btn-secondary"
-                  onClick={() => downloadTextFile(`${result.ticker ?? 'earnings'}-analyse.txt`, buildReportText(result))}
-                >
-                  <DownloadIcon className="h-4 w-4" />
-                  Report herunterladen
-                </button>
+                <div className="flex gap-2">
+                  <button className="btn-secondary" onClick={handleCopyMarkdown}>
+                    {copied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
+                    {copied ? 'Kopiert!' : 'Als Markdown kopieren'}
+                  </button>
+                  <button
+                    className="btn-secondary"
+                    onClick={() => downloadTextFile(`${result.ticker ?? 'earnings'}-analyse.txt`, buildReportText(result))}
+                  >
+                    <DownloadIcon className="h-4 w-4" />
+                    Report herunterladen
+                  </button>
+                </div>
               </div>
               <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                 <div
@@ -240,11 +313,43 @@ export function EarningsReviewer() {
                   style={{ width: `${Math.min(100, Math.abs(result.toneScore))}%`, marginLeft: result.toneScore < 0 ? `${100 - Math.min(100, Math.abs(result.toneScore))}%` : undefined }}
                 />
               </div>
-              <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-600">Sentiment-Score: {result.toneScore}</p>
+              <p className="mt-1 text-[11px] text-slate-400 dark:text-slate-600">
+                Sentiment-Score: {result.toneScore}
+                {previousAnalysis && ` · Vorquartal: ${previousAnalysis.toneScore}`}
+              </p>
             </div>
 
-            <ResultSection title="Key Messages" items={result.keyMessages} />
-            <ResultSection title="Finanzielle Highlights" items={result.financialHighlights} />
+            <div className="card p-5">
+              <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">Key Statements</h3>
+              <ul className="space-y-2">
+                {result.keyMessages.map((m, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300">
+                    <span className="mt-0.5 flex-shrink-0">{STATEMENT_EMOJI[m.tone]}</span>
+                    {m.text}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="card p-5">
+              <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">Financial Highlights</h3>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <MetricCard label="Revenue" value={result.metrics.revenue} />
+                <MetricCard label="EBIT" value={result.metrics.ebit} />
+                <MetricCard label="Net Income" value={result.metrics.netIncome} />
+                <MetricCard label="Growth" value={result.metrics.growth} />
+              </div>
+              {result.financialHighlights.length > 0 && (
+                <ul className="mt-4 space-y-1.5 border-t border-slate-100 pt-3 dark:border-slate-800">
+                  {result.financialHighlights.map((item, i) => (
+                    <li key={i} className="border-l-2 border-l-indigo-500 pl-3 text-xs text-slate-500 dark:text-slate-400">
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
             <ResultSection title="Guidance" items={result.guidance} />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <ResultSection title="Risiken" items={result.risks} tone="negative" />
@@ -275,5 +380,37 @@ function ResultSection({ title, items, tone }: { title: string; items: string[];
         ))}
       </ul>
     </div>
+  );
+}
+
+function MetricCard({ label, value }: { label: string; value: string | null }) {
+  return (
+    <div className="rounded-lg bg-slate-50 p-3 text-center dark:bg-slate-800/60">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">{label}</p>
+      <p className={`mt-1 text-sm font-bold ${value ? 'text-slate-900 dark:text-white' : 'text-slate-300 dark:text-slate-600'}`}>
+        {value ?? 'n/a'}
+      </p>
+    </div>
+  );
+}
+
+function ToneTrend({ current, previous }: { current: number; previous: number }) {
+  const diff = current - previous;
+  if (Math.abs(diff) < 5) {
+    return (
+      <span className="flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400" title={`Vorquartal: ${previous}`}>
+        → stabil vs. Vorquartal
+      </span>
+    );
+  }
+  const improved = diff > 0;
+  return (
+    <span
+      className={`flex items-center gap-0.5 text-xs font-medium ${improved ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}
+      title={`Vorquartal: ${previous}`}
+    >
+      {improved ? <ArrowUpIcon className="h-3 w-3" /> : <ArrowDownIcon className="h-3 w-3" />}
+      {improved ? 'verbessert' : 'verschlechtert'} vs. Vorquartal
+    </span>
   );
 }

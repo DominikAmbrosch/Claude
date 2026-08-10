@@ -4,24 +4,28 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
 } from 'recharts';
 import { useAppStore } from '../../store/AppStore';
-import { getStockProfile } from '../../data/mockStocks';
+import { getStockProfile, POPULAR_TICKERS } from '../../data/mockStocks';
 import type { PortfolioHolding } from '../../types';
-import { buildPortfolioSummary, aggregateBy, buildPerformanceSeries } from '../../utils/portfolioMetrics';
+import { buildPortfolioSummary, aggregateBy, buildPerformanceSeries, type AllocationSlice } from '../../utils/portfolioMetrics';
 import { BENCHMARK_IDS, type BenchmarkId } from '../../data/mockBenchmarks';
-import { formatCurrency, formatPercent, formatDate, formatNumber } from '../../utils/formatters';
+import { formatCurrency, formatPercent, formatDate, formatNumber, formatHoldingPeriod } from '../../utils/formatters';
 import { downloadCsvFile, exportElementToPdf } from '../../utils/pdfExport';
-import { PlusIcon, TrashIcon, DownloadIcon, BellIcon } from '../icons';
+import { PlusIcon, TrashIcon, EditIcon, CheckIcon, CloseIcon, DownloadIcon, BellIcon } from '../icons';
+import { PositionDialog, type PositionFormValues } from './PositionDialog';
 
 const PIE_COLORS = ['#9c7239', '#5b7553', '#a6192e', '#c17f3e', '#7c93a6', '#8c7ba6', '#57585a', '#c98d82'];
 
 export function PortfolioDashboard() {
-  const { holdings, addHolding, removeHolding, watchlist, alerts, setAlert, valuationModels, requestOpenInModelBuilder } = useAppStore();
+  const { holdings, addHolding, updateHolding, removeHolding, watchlist, alerts, setAlert, valuationModels, requestOpenInModelBuilder } =
+    useAppStore();
   const [benchmark, setBenchmark] = useState<BenchmarkId>('DAX');
   const [simulatedCash, setSimulatedCash] = useState(0);
-  const [form, setForm] = useState({ ticker: '', shares: '', buyPrice: '', buyDate: new Date().toISOString().slice(0, 10) });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingHolding, setEditingHolding] = useState<PortfolioHolding | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const allTickers = useMemo(() => {
-    const set = new Set<string>([...holdings.map((h) => h.ticker), ...watchlist.map((w) => w.ticker)]);
+    const set = new Set<string>([...holdings.map((h) => h.ticker), ...watchlist.map((w) => w.ticker), ...POPULAR_TICKERS]);
     return Array.from(set);
   }, [holdings, watchlist]);
 
@@ -36,23 +40,30 @@ export function PortfolioDashboard() {
   const countryAllocation = useMemo(() => aggregateBy(summary.holdings, 'country'), [summary.holdings]);
   const { series: performanceSeries, risk } = useMemo(() => buildPerformanceSeries(summary.holdings, benchmark), [summary.holdings, benchmark]);
 
-  function handleAddHolding(e: React.FormEvent) {
-    e.preventDefault();
-    const shares = parseFloat(form.shares);
-    const buyPrice = parseFloat(form.buyPrice);
-    if (!form.ticker.trim() || !shares || !buyPrice) return;
-    const profile = getStockProfile(form.ticker);
-    const holding: PortfolioHolding = {
-      id: `holding-${Date.now()}`,
-      ticker: profile.ticker,
-      shares,
-      buyPrice,
-      buyDate: form.buyDate,
-      sector: profile.sector,
-      country: profile.country,
-    };
-    addHolding(holding);
-    setForm({ ticker: '', shares: '', buyPrice: '', buyDate: new Date().toISOString().slice(0, 10) });
+  function handleDialogSubmit(values: PositionFormValues) {
+    const shares = parseFloat(values.shares);
+    const buyPrice = parseFloat(values.buyPrice);
+    if (editingHolding) {
+      updateHolding(editingHolding.id, { shares, buyPrice, buyDate: values.buyDate });
+    } else {
+      const profile = getStockProfile(values.ticker);
+      addHolding({
+        id: `holding-${Date.now()}`,
+        ticker: profile.ticker,
+        shares,
+        buyPrice,
+        buyDate: values.buyDate,
+        sector: profile.sector,
+        country: profile.country,
+      });
+    }
+    setDialogOpen(false);
+    setEditingHolding(null);
+  }
+
+  function handleDeleteConfirmed(id: string) {
+    removeHolding(id);
+    setConfirmDeleteId(null);
   }
 
   function handleExportCsv() {
@@ -94,24 +105,37 @@ export function PortfolioDashboard() {
         <div className="min-w-0 space-y-6">
           {/* Holdings table */}
           <div className="card p-5">
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Positionen</h3>
-              <button className="btn-secondary" onClick={handleExportCsv}>
-                <DownloadIcon className="h-4 w-4" />
-                Excel (CSV)
-              </button>
+              <div className="flex gap-2">
+                <button className="btn-secondary" onClick={handleExportCsv}>
+                  <DownloadIcon className="h-4 w-4" />
+                  Excel (CSV)
+                </button>
+                <button
+                  className="btn-primary"
+                  onClick={() => {
+                    setEditingHolding(null);
+                    setDialogOpen(true);
+                  }}
+                >
+                  <PlusIcon className="h-4 w-4" />
+                  Position hinzufügen
+                </button>
+              </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-sm">
+              <table className="w-full min-w-[720px] text-sm">
                 <thead>
                   <tr className="text-left text-xs text-slate-400 dark:text-slate-500">
                     <th className="pb-2 font-medium">Ticker</th>
                     <th className="pb-2 font-medium">Anzahl</th>
-                    <th className="pb-2 font-medium">Kaufkurs</th>
+                    <th className="pb-2 font-medium">Ø-Kaufkurs</th>
                     <th className="pb-2 font-medium">Aktuell</th>
                     <th className="pb-2 font-medium">Wert</th>
                     <th className="pb-2 font-medium">G/V</th>
                     <th className="pb-2 font-medium">Gewicht</th>
+                    <th className="pb-2 font-medium">Haltedauer</th>
                     <th className="pb-2 font-medium"></th>
                   </tr>
                 </thead>
@@ -128,16 +152,41 @@ export function PortfolioDashboard() {
                         <span className="ml-1 text-xs">({formatPercent(h.plPct)})</span>
                       </td>
                       <td className="py-2.5 text-slate-500 dark:text-slate-400">{formatNumber(h.weightPct)}%</td>
+                      <td className="py-2.5 text-slate-500 dark:text-slate-400">{formatHoldingPeriod(h.buyDate)}</td>
                       <td className="py-2.5 text-right">
-                        <button onClick={() => removeHolding(h.id)} className="btn-ghost !p-1">
-                          <TrashIcon className="h-3.5 w-3.5" />
-                        </button>
+                        {confirmDeleteId === h.id ? (
+                          <span className="flex items-center justify-end gap-1 whitespace-nowrap">
+                            <span className="text-xs text-slate-500 dark:text-slate-400">Löschen?</span>
+                            <button onClick={() => handleDeleteConfirmed(h.id)} className="btn-ghost !p-1 !text-rose-600 dark:!text-rose-400" title="Bestätigen">
+                              <CheckIcon className="h-3.5 w-3.5" />
+                            </button>
+                            <button onClick={() => setConfirmDeleteId(null)} className="btn-ghost !p-1" title="Abbrechen">
+                              <CloseIcon className="h-3.5 w-3.5" />
+                            </button>
+                          </span>
+                        ) : (
+                          <span className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => {
+                                setEditingHolding(h);
+                                setDialogOpen(true);
+                              }}
+                              className="btn-ghost !p-1"
+                              title="Bearbeiten"
+                            >
+                              <EditIcon className="h-3.5 w-3.5" />
+                            </button>
+                            <button onClick={() => setConfirmDeleteId(h.id)} className="btn-ghost !p-1" title="Löschen">
+                              <TrashIcon className="h-3.5 w-3.5" />
+                            </button>
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}
                   {summary.holdings.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="py-6 text-center text-xs text-slate-400">
+                      <td colSpan={9} className="py-6 text-center text-xs text-slate-400">
                         Noch keine Positionen im Depot.
                       </td>
                     </tr>
@@ -145,18 +194,18 @@ export function PortfolioDashboard() {
                 </tbody>
               </table>
             </div>
-
-            <form onSubmit={handleAddHolding} className="mt-4 grid grid-cols-2 gap-2 border-t border-slate-100 pt-4 sm:grid-cols-5 dark:border-slate-800">
-              <input className="input" placeholder="Ticker" value={form.ticker} onChange={(e) => setForm((f) => ({ ...f, ticker: e.target.value.toUpperCase() }))} />
-              <input className="input" placeholder="Anzahl" type="number" value={form.shares} onChange={(e) => setForm((f) => ({ ...f, shares: e.target.value }))} />
-              <input className="input" placeholder="Kaufpreis" type="number" value={form.buyPrice} onChange={(e) => setForm((f) => ({ ...f, buyPrice: e.target.value }))} />
-              <input className="input" type="date" value={form.buyDate} onChange={(e) => setForm((f) => ({ ...f, buyDate: e.target.value }))} />
-              <button type="submit" className="btn-primary">
-                <PlusIcon className="h-4 w-4" />
-                Hinzufügen
-              </button>
-            </form>
           </div>
+
+          <PositionDialog
+            open={dialogOpen}
+            onClose={() => {
+              setDialogOpen(false);
+              setEditingHolding(null);
+            }}
+            onSubmit={handleDialogSubmit}
+            editing={editingHolding}
+            tickerSuggestions={allTickers}
+          />
 
           {/* Performance vs Benchmark */}
           <div className="card p-5">
@@ -293,7 +342,27 @@ function SummaryCard({ label, value, sub, positive }: { label: string; value: st
   );
 }
 
-function AllocationPie({ title, data }: { title: string; data: { name: string; value: number }[] }) {
+function AllocationTooltip({ active, payload }: { active?: boolean; payload?: { payload: AllocationSlice }[] }) {
+  if (!active || !payload?.length) return null;
+  const slice = payload[0].payload;
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-2.5 text-xs shadow-lg dark:border-slate-700 dark:bg-slate-900">
+      <p className="mb-1 font-semibold text-slate-900 dark:text-white">
+        {slice.name} · {formatCurrency(slice.value)}
+      </p>
+      <ul className="space-y-0.5">
+        {slice.positions.map((p) => (
+          <li key={p.ticker} className="flex justify-between gap-3 text-slate-500 dark:text-slate-400">
+            <span>{p.ticker}</span>
+            <span>{formatCurrency(p.value)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function AllocationPie({ title, data }: { title: string; data: AllocationSlice[] }) {
   return (
     <div className="card p-5">
       <h3 className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
@@ -308,7 +377,7 @@ function AllocationPie({ title, data }: { title: string; data: { name: string; v
                   <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(v) => formatCurrency(Number(v))} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+              <Tooltip content={<AllocationTooltip />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
             </PieChart>
           </ResponsiveContainer>

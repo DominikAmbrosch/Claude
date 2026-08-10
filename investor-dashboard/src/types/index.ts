@@ -84,7 +84,11 @@ export interface ValuationInputs {
   marginOfSafety: number;
   epsBase: number;
   terminalGrowth: number;
+  dividendPerShare: number;
+  dividendGrowthRate: number;
 }
+
+export type ValuationMethod = 'dcf' | 'comparables' | 'ddm';
 
 export interface ValuationModel {
   id: string;
@@ -111,12 +115,25 @@ export interface PriceAlert {
 
 export type Recommendation = 'Kaufen' | 'Halten' | 'Verkaufen';
 
+export interface EarningsStatement {
+  text: string;
+  tone: 'positive' | 'warning' | 'negative';
+}
+
+export interface FinancialMetrics {
+  revenue: string | null;
+  ebit: string | null;
+  netIncome: string | null;
+  growth: string | null;
+}
+
 export interface EarningsAnalysis {
   id: string;
   createdAt: string;
   ticker?: string;
   sourceExcerpt: string;
-  keyMessages: string[];
+  keyMessages: EarningsStatement[];
+  metrics: FinancialMetrics;
   financialHighlights: string[];
   guidance: string[];
   managementTone: 'Optimistisch' | 'Neutral' | 'Vorsichtig' | 'Pessimistisch';
