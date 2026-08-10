@@ -12,7 +12,7 @@ import { formatCurrency, formatPercent, formatDate, formatNumber } from '../../u
 import { downloadCsvFile, exportElementToPdf } from '../../utils/pdfExport';
 import { PlusIcon, TrashIcon, DownloadIcon, BellIcon } from '../icons';
 
-const PIE_COLORS = ['#0a84ff', '#34c759', '#ff9500', '#ff3b30', '#64d2ff', '#bf5af2', '#ffd60a', '#ff375f'];
+const PIE_COLORS = ['#9c7239', '#5b7553', '#a6192e', '#c17f3e', '#7c93a6', '#8c7ba6', '#57585a', '#c98d82'];
 
 export function PortfolioDashboard() {
   const { holdings, addHolding, removeHolding, watchlist, alerts, setAlert, valuationModels, requestOpenInModelBuilder } = useAppStore();
@@ -175,8 +175,8 @@ export function PortfolioDashboard() {
                   <YAxis tick={{ fontSize: 11 }} width={40} domain={['auto', 'auto']} />
                   <Tooltip formatter={(v) => `${formatNumber(Number(v))} (indexiert=100)`} labelFormatter={(l) => formatDate(l as string)} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Line type="monotone" dataKey="portfolio" name="Portfolio" stroke="#0a84ff" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="benchmark" name={benchmark} stroke="#8e8e93" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="portfolio" name="Portfolio" stroke="#9c7239" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="benchmark" name={benchmark} stroke="#8a8a87" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
