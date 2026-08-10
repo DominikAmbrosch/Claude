@@ -1,4 +1,4 @@
-export type ModuleId = 'researcher' | 'model' | 'earnings' | 'portfolio';
+export type ModuleId = 'researcher' | 'model' | 'earnings' | 'portfolio' | 'tips' | 'briefing';
 
 export interface NewsHeadline {
   id: string;

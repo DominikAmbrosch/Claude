@@ -122,3 +122,31 @@ export const FileIcon = (props: IconProps) => (
     <path d="M14 2v6h6" />
   </svg>
 );
+
+export const LightbulbIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M9 18h6M10 22h4M12 2a6.5 6.5 0 0 0-3.5 12c.6.4 1 1.1 1 1.9V17h5v-1.1c0-.8.4-1.5 1-1.9A6.5 6.5 0 0 0 12 2Z" />
+  </svg>
+);
+
+export const SunriseIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M12 3v5M4.2 10.2l1.4 1.4M19.8 10.2l-1.4 1.4M2 18h20M6 18a6 6 0 0 1 12 0" />
+    <path d="M1 22h22" />
+  </svg>
+);
+
+export const NewspaperIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M4 4h13a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" />
+    <path d="M8 8h7M8 12h7M8 16h4" />
+    <path d="M19 8h1a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2" />
+  </svg>
+);
+
+export const CalendarIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <rect x="3" y="4.5" width="18" height="16" rx="2" />
+    <path d="M3 9.5h18M8 2.5v4M16 2.5v4" />
+  </svg>
+);

@@ -48,6 +48,17 @@ const CURATED: Record<string, Partial<StockProfile>> = {
   MSFT: { name: 'Microsoft Corp.', isin: 'US5949181045', sector: 'Technologie', country: 'USA', currency: 'USD', price: 428.5 },
   AMZN: { name: 'Amazon.com Inc.', isin: 'US0231351067', sector: 'Konsumgüter', country: 'USA', currency: 'USD', price: 198.3 },
   MBG: { name: 'Mercedes-Benz Group AG', isin: 'DE0007100000', sector: 'Konsumgüter', country: 'Deutschland', currency: 'EUR', price: 58.4 },
+  IFX: { name: 'Infineon Technologies AG', isin: 'DE0006231004', sector: 'Technologie', country: 'Deutschland', currency: 'EUR', price: 34.6 },
+  BMW: { name: 'BMW AG', isin: 'DE0005190003', sector: 'Konsumgüter', country: 'Deutschland', currency: 'EUR', price: 84.9 },
+  BAYN: { name: 'Bayer AG', isin: 'DE000BAY0017', sector: 'Gesundheit', country: 'Deutschland', currency: 'EUR', price: 29.7 },
+  RWE: { name: 'RWE AG', isin: 'DE0007037129', sector: 'Energie', country: 'Deutschland', currency: 'EUR', price: 31.2 },
+  DBK: { name: 'Deutsche Bank AG', isin: 'DE0005140008', sector: 'Finanzen', country: 'Deutschland', currency: 'EUR', price: 18.9 },
+  MRK: { name: 'Merck KGaA', isin: 'DE0006599905', sector: 'Gesundheit', country: 'Deutschland', currency: 'EUR', price: 132.4 },
+  NVDA: { name: 'NVIDIA Corp.', isin: 'US67066G1040', sector: 'Technologie', country: 'USA', currency: 'USD', price: 178.9 },
+  GOOGL: { name: 'Alphabet Inc.', isin: 'US02079K3059', sector: 'Technologie', country: 'USA', currency: 'USD', price: 194.5 },
+  TSLA: { name: 'Tesla Inc.', isin: 'US88160R1014', sector: 'Konsumgüter', country: 'USA', currency: 'USD', price: 268.3 },
+  META: { name: 'Meta Platforms Inc.', isin: 'US30303M1027', sector: 'Technologie', country: 'USA', currency: 'USD', price: 612.7 },
+  JNJ: { name: 'Johnson & Johnson', isin: 'US4781601046', sector: 'Gesundheit', country: 'USA', currency: 'USD', price: 158.2 },
 };
 
 function generateHistory(rand: () => number, base: number, days = 90) {

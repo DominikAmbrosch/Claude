@@ -12,11 +12,20 @@ function seededRandom(seed: string) {
   };
 }
 
-export type BenchmarkId = 'DAX' | 'MSCI World';
+export type BenchmarkId = 'DAX' | 'MSCI World' | 'S&P 500' | 'Nasdaq';
+
+const BENCHMARK_BASE: Record<BenchmarkId, number> = {
+  DAX: 18500,
+  'MSCI World': 3600,
+  'S&P 500': 5850,
+  Nasdaq: 19200,
+};
+
+export const BENCHMARK_IDS: BenchmarkId[] = ['DAX', 'MSCI World', 'S&P 500', 'Nasdaq'];
 
 export function getBenchmarkHistory(id: BenchmarkId, days = 90): { date: string; close: number }[] {
   const rand = seededRandom(id);
-  const base = id === 'DAX' ? 18500 : 3600;
+  const base = BENCHMARK_BASE[id];
   let price = base * 0.94;
   const history: { date: string; close: number }[] = [];
   const today = new Date();

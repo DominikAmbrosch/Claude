@@ -4,7 +4,9 @@ import { useAppStore } from '../../store/AppStore';
 import { MenuIcon } from '../icons';
 
 const TITLES: Record<string, { title: string; subtitle: string }> = {
+  briefing: { title: 'Morning Briefing', subtitle: 'Dein täglicher Marktüberblick' },
   researcher: { title: 'Market Researcher', subtitle: 'Aktien-Recherche in 2 Minuten statt 2 Stunden' },
+  tips: { title: 'Investitions-Tipps', subtitle: 'Chancen entdecken & Positionen einschätzen' },
   model: { title: 'Model Builder', subtitle: 'Interaktives DCF-Bewertungsmodell' },
   earnings: { title: 'Earnings Reviewer', subtitle: 'Earnings-Calls & Meldungen analysieren' },
   portfolio: { title: 'Portfolio', subtitle: 'Depot-Überblick & Risikoanalyse' },

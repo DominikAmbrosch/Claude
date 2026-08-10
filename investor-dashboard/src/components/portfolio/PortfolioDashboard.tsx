@@ -7,7 +7,7 @@ import { useAppStore } from '../../store/AppStore';
 import { getStockProfile } from '../../data/mockStocks';
 import type { PortfolioHolding } from '../../types';
 import { buildPortfolioSummary, aggregateBy, buildPerformanceSeries } from '../../utils/portfolioMetrics';
-import type { BenchmarkId } from '../../data/mockBenchmarks';
+import { BENCHMARK_IDS, type BenchmarkId } from '../../data/mockBenchmarks';
 import { formatCurrency, formatPercent, formatDate, formatNumber } from '../../utils/formatters';
 import { downloadCsvFile, exportElementToPdf } from '../../utils/pdfExport';
 import { PlusIcon, TrashIcon, DownloadIcon, BellIcon } from '../icons';
@@ -163,8 +163,11 @@ export function PortfolioDashboard() {
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Performance vs. Benchmark</h3>
               <select value={benchmark} onChange={(e) => setBenchmark(e.target.value as BenchmarkId)} className="input !w-auto !py-1.5 text-xs">
-                <option value="DAX">DAX</option>
-                <option value="MSCI World">MSCI World</option>
+                {BENCHMARK_IDS.map((id) => (
+                  <option key={id} value={id}>
+                    {id}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="h-56 w-full">

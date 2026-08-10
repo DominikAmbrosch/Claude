@@ -1,9 +1,11 @@
 import { useAppStore } from '../../store/AppStore';
 import type { ModuleId } from '../../types';
-import { SearchIcon, CalculatorIcon, MicIcon, BriefcaseIcon, SunIcon, MoonIcon, CloseIcon } from '../icons';
+import { SearchIcon, CalculatorIcon, MicIcon, BriefcaseIcon, LightbulbIcon, SunriseIcon, SunIcon, MoonIcon, CloseIcon } from '../icons';
 
 const NAV_ITEMS: { id: ModuleId; label: string; description: string; icon: typeof SearchIcon }[] = [
+  { id: 'briefing', label: 'Morning Briefing', description: 'Täglicher Marktüberblick', icon: SunriseIcon },
   { id: 'researcher', label: 'Market Researcher', description: 'Aktien-Recherche in 2 Minuten', icon: SearchIcon },
+  { id: 'tips', label: 'Investitions-Tipps', description: 'Chancen & Halten/Verkaufen-Signale', icon: LightbulbIcon },
   { id: 'model', label: 'Model Builder', description: 'DCF-Bewertungsmodell', icon: CalculatorIcon },
   { id: 'earnings', label: 'Earnings Reviewer', description: 'Earnings-Call-Analyse', icon: MicIcon },
   { id: 'portfolio', label: 'Portfolio', description: 'Depot-Überblick', icon: BriefcaseIcon },

@@ -65,7 +65,7 @@ const AppStoreContext = createContext<AppStoreValue | null>(null);
 
 export function AppStoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<PersistedState>(loadState);
-  const [activeModule, setActiveModule] = useState<ModuleId>('researcher');
+  const [activeModule, setActiveModule] = useState<ModuleId>('briefing');
   const [openInModelBuilder, setOpenInModelBuilder] = useState<string | null>(null);
 
   useEffect(() => {
