@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Apple's real product/device finish colors, mapped onto Tailwind's default
+   palette scales so every existing utility class (bg-, text-, border-,
+   ring-, from-/to-, stroke-, fill-) renders with Apple's colors. */
+@theme {
+  /* Neutral scale built from Starlight, Silver, Space Gray and Midnight
+     (the aluminum/glass finishes shared across Mac, iPhone and iPad). */
+  --color-slate-50: #faf7f0;
+  --color-slate-100: #f2eee3;
+  --color-slate-200: #e4e3df;
+  --color-slate-300: #d1d0cb;
+  --color-slate-400: #a9a8a4;
+  --color-slate-500: #8a8a87;
+  --color-slate-600: #6e6e6b;
+  --color-slate-700: #57585a;
+  --color-slate-800: #38393b;
+  --color-slate-900: #1e2124;
+  --color-slate-950: #000000;
+
+  /* Gold (the signature Mac/iPhone metallic finish) replaces Tailwind's
+     indigo as the app's accent/brand color. */
+  --color-indigo-50: #fbf3e4;
+  --color-indigo-100: #f5e6c9;
+  --color-indigo-200: #ead2a0;
+  --color-indigo-300: #debd77;
+  --color-indigo-400: #cba35a;
+  --color-indigo-500: #b8894a;
+  --color-indigo-600: #9c7239;
+  --color-indigo-700: #7d5b2d;
+  --color-indigo-800: #5f4522;
+  --color-indigo-900: #3d2c16;
+  --color-indigo-950: #241a0d;
+
+  /* Alpine Green (iPhone/MacBook "Green" finish). */
+  --color-emerald-50: #eef1ea;
+  --color-emerald-100: #dce4d3;
+  --color-emerald-400: #7c9470;
+  --color-emerald-500: #5b7553;
+  --color-emerald-600: #43593d;
+  --color-emerald-700: #34462f;
+
+  /* Apple's official (PRODUCT)RED finish. */
+  --color-rose-50: #fbeaec;
+  --color-rose-100: #f5d0d5;
+  --color-rose-400: #c44257;
+  --color-rose-500: #a6192e;
+  --color-rose-600: #8c0927;
+  --color-rose-700: #6e0720;
+
+  /* Rose Gold / Copper (warm secondary metallic finish). */
+  --color-amber-50: #fbf0e7;
+  --color-amber-100: #f5dec9;
+  --color-amber-400: #d9995c;
+  --color-amber-500: #c17f3e;
+  --color-amber-600: #9c6530;
+  --color-amber-700: #784e25;
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgb(142 142 147 / 0.4);
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgb(142 142 147 / 0.5);
+}
+
+.card {
+  @apply rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900;
+}
+
+.input {
+  @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500;
+}
+
+.label {
+  @apply mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.btn-primary {
+  @apply btn bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400;
+}
+
+.btn-secondary {
+  @apply btn bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700;
+}
+
+.btn-ghost {
+  @apply btn text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100;
+}
+
+.badge {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+}
