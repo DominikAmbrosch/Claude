@@ -1,0 +1,11 @@
+{
+  "eval_id": 2,
+  "eval_name": "repo-grounded-feature-plan",
+  "prompt": "Grill mich zu meinem Plan, dem investor-dashboard ein neues Feature für Krypto-Portfolios hinzuzufügen — soll das ein neuer Tab werden oder in die bestehende Portfolio-Ansicht integriert werden?",
+  "assertions": [
+    "The response shows evidence the repo was actually explored (references real file/component/type names from investor-dashboard, not generic placeholders)",
+    "The response asks exactly one question of the user, not a list of several questions at once",
+    "The response includes a concrete recommended answer for that question",
+    "The question asked is a genuine judgment call, not something discoverable by reading the repo"
+  ]
+}

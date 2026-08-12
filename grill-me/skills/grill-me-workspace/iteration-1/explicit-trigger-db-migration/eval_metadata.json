@@ -1,0 +1,11 @@
+{
+  "eval_id": 0,
+  "eval_name": "explicit-trigger-db-migration",
+  "prompt": "Grill mich zu meinem Plan: Ich will unsere Postgres-DB von einem Single-Node-Setup auf eine Multi-Region-Replikation umstellen, nächsten Monat, ohne Downtime.",
+  "assertions": [
+    "The response asks exactly one question of the user, not a list of several questions at once",
+    "The response includes a concrete recommended answer for that question",
+    "The response does not begin implementation work (no migration scripts, config, or commands)",
+    "The response explicitly ends by waiting for the user's answer rather than assuming one and moving on"
+  ]
+}

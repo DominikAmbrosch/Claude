@@ -1,0 +1,44 @@
+{
+  "skill_name": "grill-me",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "explicit-trigger-db-migration",
+      "prompt": "Grill mich zu meinem Plan: Ich will unsere Postgres-DB von einem Single-Node-Setup auf eine Multi-Region-Replikation umstellen, nächsten Monat, ohne Downtime.",
+      "expected_output": "Claude interviews the user about the migration plan, one question at a time, each with a recommended answer, without starting implementation.",
+      "files": [],
+      "expectations": [
+        "The response asks exactly one question of the user, not a list of several questions at once",
+        "The response includes a concrete recommended answer for that question",
+        "The response does not begin implementation work (no migration scripts, config, or commands)",
+        "The response explicitly ends by waiting for the user's answer rather than assuming one and moving on"
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "implicit-trigger-startup-decision",
+      "prompt": "Ich überlege, meinen Job zu kündigen und ein eigenes SaaS-Startup im Bereich Fitness-Tracking zu gründen. Kannst du meinen Plan stresstesten, bevor ich es meiner Familie erzähle?",
+      "expected_output": "Claude recognizes this as a stresstest-my-plan request (without the literal phrase 'grill mich') and triggers the grill-me interview pattern: one question at a time with a recommendation.",
+      "files": [],
+      "expectations": [
+        "The response applies the grill-me one-question-at-a-time interview pattern despite the user not saying 'grill mich' literally",
+        "The response asks exactly one question, not a list of several questions at once",
+        "The response includes a concrete recommended answer for that question",
+        "The response does not jump straight to generic startup advice or a listicle of considerations"
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "repo-grounded-feature-plan",
+      "prompt": "Grill mich zu meinem Plan, dem investor-dashboard ein neues Feature für Krypto-Portfolios hinzuzufügen — soll das ein neuer Tab werden oder in die bestehende Portfolio-Ansicht integriert werden?",
+      "expected_output": "Claude explores the investor-dashboard repo itself to discover facts (existing structure, components, data model) rather than asking the user about anything discoverable from the code, and only asks the user about genuine decisions, one at a time with a recommendation.",
+      "files": ["/home/user/Claude/investor-dashboard"],
+      "expectations": [
+        "The response shows evidence the repo was actually explored (references real file/component/type names from investor-dashboard, not generic placeholders)",
+        "The response asks exactly one question of the user, not a list of several questions at once",
+        "The response includes a concrete recommended answer for that question",
+        "The question asked is a genuine judgment call, not something discoverable by reading the repo"
+      ]
+    }
+  ]
+}

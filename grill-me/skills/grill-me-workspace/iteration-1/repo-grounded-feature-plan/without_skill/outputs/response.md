@@ -1,0 +1,19 @@
+Bevor ich dir sage "neuer Tab" oder "integrieren" – lass mich erstmal ein paar Löcher in den Plan bohren, denn ich hab mir `investor-dashboard` angeschaut und die aktuelle Portfolio-Ansicht ist ziemlich tief auf Aktien zugeschnitten. Ein paar Fragen, bevor überhaupt eine der beiden Optionen Sinn ergibt:
+
+1. **Datenmodell**: `PortfolioHolding` (in `src/types/index.ts`) hat aktuell `ticker`, `shares`, `buyPrice`, `sector`, `country` – kein `assetClass`-Feld. Und `StockProfile` schleppt jede Menge aktien-spezifisches Gepäck mit (`analystRatings`, `fundamentals.peRatio/psRatio/roe`, `technicals.sma50/sma200`, Earnings-Events). Willst du Krypto in genau dieses Modell zwängen (viele Felder bleiben dann einfach leer/undefined), oder brauchst du einen parallelen `CryptoAsset`-Typ mit eigener Shape? Das ist im Grunde die eigentliche Architekturentscheidung – "Tab vs. Integration" ist nur die UI-Konsequenz davon.
+
+2. **Sektor-/Länder-Allokation**: Die beiden Pie-Charts in `PortfolioDashboard.tsx` (`aggregateBy(..., 'sector'|'country')`) sind für Krypto ziemlich witzlos. Was soll da stattdessen stehen – Coin, Market-Cap-Tier, Chain/Ökosystem? Und soll das eine dritte Chart-Kachel werden, oder ersetzt/überschreibt es die bestehenden für gemischte Portfolios?
+
+3. **Benchmark-Vergleich**: Aktuell nur DAX/MSCI World (`mockBenchmarks.ts`), Performance-Serie basiert auf `holdings[0].profile.history.length` Handelstagen und die Risikokennzahlen (Sharpe, Beta, Vol) annualisieren mit `Math.sqrt(252)` – klassische Börsentage. Krypto handelt 365 Tage/24-7. Rechnest du das einfach so mit durch (leicht verzerrte Kennzahlen), oder brauchst du einen eigenen Benchmark (BTC, ein Crypto-Index) und eigene Risikokennzahlen für den Krypto-Anteil?
+
+4. **Datenquelle**: `mockStocks.ts` generiert deterministisch Pseudo-Zufallsdaten pro Ticker-Symbol, kuratiert für ~20 Aktien. Für Krypto bräuchtest du entweder eine eigene Symbolliste mit demselben Trick, oder gleich einen echten Feed (CoinGecko o.ä.) – README erwähnt ja explizit, dass `mockStocks.ts` später gegen Alpha Vantage/finnhub austauschbar sein soll. Ist das der Moment, wo du gleich auf einen echten Preis-Adapter umsteigst, oder bleibt erstmal alles Mock?
+
+5. **Watchlist/Alerts/Model Builder**: Die bestehen komplett ticker-basiert gegen `getStockProfile`. Der DCF-Model-Builder ("Fair Value berechnen") ergibt für Krypto ja semantisch keinen Sinn. Nutzt du dieselbe Watchlist-/Alert-Infrastruktur für Krypto mit, oder brauchen Krypto-Positionen eine eigene, abgespeckte Watchlist ohne den Verweis auf Model Builder?
+
+6. **Eigentliches Nutzerbedürfnis**: Geht es dir um eine **konsolidierte Gesamtvermögensübersicht** (ein Depotwert, eine G/V-Zahl, Aktien + Krypto zusammen), oder willst du Krypto bewusst **getrennt** halten, weil Risikoprofil/Volatilität/Handelslogik so unterschiedlich sind, dass eine gemeinsame Darstellung eher irreführend wäre? Das entscheidet imho mehr über Tab-vs-Integration als alles UI-technische.
+
+7. Falls "neuer Tab": Das heißt neuer `ModuleId`-Wert, neuer Sidebar-Eintrag (`NAV_ITEMS` in `Sidebar.tsx`) und wahrscheinlich eine zweite, weitgehend duplizierte Version von Tabelle/Formular/Allocation-Charts/CSV-Export – bist du bereit, diese Duplikation zu pflegen, oder gibt's einen Plan, gemeinsame Bausteine (z.B. `SummaryCard`, `AllocationPie`, CSV-Export) zu extrahieren, bevor du den zweiten Tab baust?
+
+8. Falls "integriert": `PortfolioDashboard.tsx` ist schon jetzt ~280 Zeilen mit Tabelle, Performance-Chart, zwei Pie-Charts, What-if-Simulation und Watchlist-Sidebar. Wie soll die Unterscheidung Aktie/Krypto in derselben Tabelle/denselben Charts sichtbar werden – ein Filter-Toggle, eine zusätzliche Spalte, separate Sub-Sections auf derselben Seite?
+
+Beantworte mir die, dann sag ich dir, wo ich "Tab" für die klar bessere Antwort halte und wo "Integration".

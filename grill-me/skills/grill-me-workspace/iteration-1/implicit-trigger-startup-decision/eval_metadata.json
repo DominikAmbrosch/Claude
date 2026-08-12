@@ -1,0 +1,11 @@
+{
+  "eval_id": 1,
+  "eval_name": "implicit-trigger-startup-decision",
+  "prompt": "Ich überlege, meinen Job zu kündigen und ein eigenes SaaS-Startup im Bereich Fitness-Tracking zu gründen. Kannst du meinen Plan stresstesten, bevor ich es meiner Familie erzähle?",
+  "assertions": [
+    "The response applies the grill-me one-question-at-a-time interview pattern despite the user not saying 'grill mich' literally",
+    "The response asks exactly one question, not a list of several questions at once",
+    "The response includes a concrete recommended answer for that question",
+    "The response does not jump straight to generic startup advice or a listicle of considerations"
+  ]
+}
