@@ -33,3 +33,17 @@ new skills are picked up. The `using-superpowers` skill governs when the others 
 project normally loads it automatically via a SessionStart hook (not wired up here since it relies on
 `/plugin install`'s `${CLAUDE_PLUGIN_ROOT}` mechanism) — see `superpowers/README.md` and
 `superpowers/hooks/hooks.json` to set that up by hand, or invoke skills directly via the `Skill` tool.
+
+This repo also vendors the [`grill-me`](https://github.com/mattpocock/skills/blob/main/skills/productivity/grill-me/SKILL.md)
+skill from [mattpocock/skills](https://github.com/mattpocock/skills) (translated to German) under
+[`grill-me/`](grill-me/), for the same reason. It interviews you relentlessly about a plan or decision,
+one question at a time, until a shared understanding is reached.
+
+To install it into a Claude Code environment, run:
+
+```bash
+bash grill-me/install.sh
+```
+
+This copies the skill to `~/.claude/skills/grill-me/`. Restart Claude Code afterwards so the new
+skill is picked up, then say "grill mich" to stresstest a plan.
