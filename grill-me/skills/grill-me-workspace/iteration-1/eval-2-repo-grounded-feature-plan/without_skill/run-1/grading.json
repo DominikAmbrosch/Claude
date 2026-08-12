@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "The response shows evidence the repo was actually explored (references real file/component/type names from investor-dashboard, not generic placeholders)",
+      "passed": true,
+      "evidence": "The baseline agent was also given repo access and chose to explore it (PortfolioHolding, StockProfile, mockBenchmarks.ts, Sidebar.tsx, App.tsx, mockStocks.ts) — this assertion doesn't discriminate for this eval since a capable general-purpose agent explores the repo on its own initiative even without the skill."
+    },
+    {
+      "text": "The response asks exactly one question of the user, not a list of several questions at once",
+      "passed": false,
+      "evidence": "8 numbered questions are asked, covering data model, allocation semantics, benchmarking, data source, watchlist/alerts, underlying need, and cost of each approach."
+    },
+    {
+      "text": "The response includes a concrete recommended answer for that question",
+      "passed": false,
+      "evidence": "No 'Empfehlung' or recommended answer is given for any of the 8 questions — purely a question list."
+    },
+    {
+      "text": "The question asked is a genuine judgment call, not something discoverable by reading the repo",
+      "passed": true,
+      "evidence": "All 8 questions are legitimate product/design judgment calls not resolvable purely from the code, even though there are 8 of them rather than one."
+    }
+  ],
+  "summary": {"passed": 2, "failed": 2, "total": 4, "pass_rate": 0.5},
+  "execution_metrics": {
+    "total_tool_calls": 11,
+    "output_chars": 3906
+  },
+  "timing": {"executor_duration_seconds": 71.5}
+}

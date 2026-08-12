@@ -1,0 +1,298 @@
+{
+  "metadata": {
+    "skill_name": "grill-me",
+    "skill_path": "/home/user/Claude/grill-me/skills/grill-me",
+    "executor_model": "claude-sonnet-5",
+    "analyzer_model": "claude-sonnet-5",
+    "timestamp": "2026-08-12T21:09:56Z",
+    "evals_run": [
+      0,
+      1,
+      2
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 59.0,
+        "tokens": 36241,
+        "tool_calls": 5,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response asks exactly one question of the user, not a list of several questions at once",
+          "passed": true,
+          "evidence": "The response asks a single question ('Was ist der prim\u00e4re Treiber f\u00fcr die Multi-Region-Replikation?'), offering (a)-(d) as answer options to that one question, then closes with a one-sentence restatement of the same question. No second, independent question is introduced."
+        },
+        {
+          "text": "The response includes a concrete recommended answer for that question",
+          "passed": true,
+          "evidence": "\"Meine Empfehlung: Ich w\u00fcrde erstmal von (a) Disaster Recovery ausgehen, kombiniert mit (b) als Nebeneffekt.\" with a reasoned justification."
+        },
+        {
+          "text": "The response does not begin implementation work (no migration scripts, config, or commands)",
+          "passed": true,
+          "evidence": "No code, commands, or config appear anywhere in the response \u2014 purely a question plus rationale."
+        },
+        {
+          "text": "The response explicitly ends by waiting for the user's answer rather than assuming one and moving on",
+          "passed": true,
+          "evidence": "Final line: \"Was ist bei euch der Haupttreiber \u2013 und ist es einer oder eine Kombination?\" \u2014 a direct handoff back to the user, no assumed answer."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 42.3,
+        "tokens": 35065,
+        "tool_calls": 4,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response applies the grill-me one-question-at-a-time interview pattern despite the user not saying 'grill mich' literally",
+          "passed": true,
+          "evidence": "Response explicitly frames itself as an interview: \"Ich werde dich Schritt f\u00fcr Schritt zu allen relevanten Aspekten befragen \u2013 eine Frage nach der anderen, jeweils mit meiner Einsch\u00e4tzung...\" and the transcript confirms the executor matched the request to the skill's 'stresstest my plan' trigger condition even without the literal phrase."
+        },
+        {
+          "text": "The response asks exactly one question, not a list of several questions at once",
+          "passed": true,
+          "evidence": "Only one question is asked: 'Wie weit ist die Idee bereits validiert?'"
+        },
+        {
+          "text": "The response includes a concrete recommended answer for that question",
+          "passed": true,
+          "evidence": "\"Meine Empfehlung: Wenn du noch keine zahlenden Nutzer oder zumindest sehr belastbare Validierungssignale hast, w\u00fcrde ich das als den kritischsten Blocker einstufen...\""
+        },
+        {
+          "text": "The response does not jump straight to generic startup advice or a listicle of considerations",
+          "passed": true,
+          "evidence": "No listicle \u2014 the response is a single targeted question with rationale, not a checklist of startup considerations."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 95.2,
+        "tokens": 62952,
+        "tool_calls": 16,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response shows evidence the repo was actually explored (references real file/component/type names from investor-dashboard, not generic placeholders)",
+          "passed": true,
+          "evidence": "Cites real symbols: ModuleId, App.tsx, Sidebar.tsx, PortfolioDashboard.tsx, PortfolioHolding, mockBenchmarks.ts / BenchmarkId, getStockProfile in mockStocks.ts \u2014 all real names confirmed present in the repo."
+        },
+        {
+          "text": "The response asks exactly one question of the user, not a list of several questions at once",
+          "passed": true,
+          "evidence": "Ends with a single question ('Stimmst du dieser Grundrichtung zu...?') framed with two alternative answers, not a separate list of unrelated questions."
+        },
+        {
+          "text": "The response includes a concrete recommended answer for that question",
+          "passed": true,
+          "evidence": "\"Meine Empfehlung: Krypto als eigenen neuen Tab (ModuleId: 'crypto' o.\u00e4.) anlegen...\" with concrete reasoning."
+        },
+        {
+          "text": "The question asked is a genuine judgment call, not something discoverable by reading the repo",
+          "passed": true,
+          "evidence": "The tab-vs-integration product decision is not something the codebase itself resolves \u2014 it depends on the user's product intent, which the response correctly treats as needing to be asked rather than inferred."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 0,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 2,
+        "failed": 2,
+        "total": 4,
+        "time_seconds": 36.4,
+        "tokens": 33805,
+        "tool_calls": 2,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response asks exactly one question of the user, not a list of several questions at once",
+          "passed": false,
+          "evidence": "The response asks 14 numbered questions grouped into 4 thematic clusters (Ziel, Konsistenz/Failover, Migration, Zeitplan/Betrieb)."
+        },
+        {
+          "text": "The response includes a concrete recommended answer for that question",
+          "passed": false,
+          "evidence": "No recommendation is offered for any of the 14 questions \u2014 it only asks and invites the user to answer 'the top three or four'."
+        },
+        {
+          "text": "The response does not begin implementation work (no migration scripts, config, or commands)",
+          "passed": true,
+          "evidence": "No code, commands, or config appear \u2014 purely questions."
+        },
+        {
+          "text": "The response explicitly ends by waiting for the user's answer rather than assuming one and moving on",
+          "passed": true,
+          "evidence": "Ends with \"Beantworte gern erstmal die f\u00fcr dich wichtigsten drei oder vier davon \u2013 dann k\u00f6nnen wir gezielt in die Tiefe gehen\" \u2014 waits for the user."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.0,
+        "passed": 0,
+        "failed": 4,
+        "total": 4,
+        "time_seconds": 25.3,
+        "tokens": 32736,
+        "tool_calls": 2,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response applies the grill-me one-question-at-a-time interview pattern despite the user not saying 'grill mich' literally",
+          "passed": false,
+          "evidence": "No skill was loaded (baseline); the response groups roughly 10 questions into 4 categories (Finanzen & Risiko, Produkt & Markt, Du als Gr\u00fcnder, Timing) instead of asking one question at a time."
+        },
+        {
+          "text": "The response asks exactly one question, not a list of several questions at once",
+          "passed": false,
+          "evidence": "Approximately 10 questions are asked across 4 sections."
+        },
+        {
+          "text": "The response includes a concrete recommended answer for that question",
+          "passed": false,
+          "evidence": "No explicit recommendation is given for any individual question \u2014 it only asks and requests 'grobe Antworten' before offering any view."
+        },
+        {
+          "text": "The response does not jump straight to generic startup advice or a listicle of considerations",
+          "passed": false,
+          "evidence": "The response is structured as exactly this kind of listicle: four labeled sections, each a bullet list of considerations/questions."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 2,
+        "failed": 2,
+        "total": 4,
+        "time_seconds": 71.5,
+        "tokens": 53671,
+        "tool_calls": 11,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The response shows evidence the repo was actually explored (references real file/component/type names from investor-dashboard, not generic placeholders)",
+          "passed": true,
+          "evidence": "The baseline agent was also given repo access and chose to explore it (PortfolioHolding, StockProfile, mockBenchmarks.ts, Sidebar.tsx, App.tsx, mockStocks.ts) \u2014 this assertion doesn't discriminate for this eval since a capable general-purpose agent explores the repo on its own initiative even without the skill."
+        },
+        {
+          "text": "The response asks exactly one question of the user, not a list of several questions at once",
+          "passed": false,
+          "evidence": "8 numbered questions are asked, covering data model, allocation semantics, benchmarking, data source, watchlist/alerts, underlying need, and cost of each approach."
+        },
+        {
+          "text": "The response includes a concrete recommended answer for that question",
+          "passed": false,
+          "evidence": "No 'Empfehlung' or recommended answer is given for any of the 8 questions \u2014 purely a question list."
+        },
+        {
+          "text": "The question asked is a genuine judgment call, not something discoverable by reading the repo",
+          "passed": true,
+          "evidence": "All 8 questions are legitimate product/design judgment calls not resolvable purely from the code, even though there are 8 of them rather than one."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 65.5,
+        "stddev": 27.0424,
+        "min": 42.3,
+        "max": 95.2
+      },
+      "tokens": {
+        "mean": 44752.6667,
+        "stddev": 15772.0495,
+        "min": 35065,
+        "max": 62952
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.3333,
+        "stddev": 0.2887,
+        "min": 0.0,
+        "max": 0.5
+      },
+      "time_seconds": {
+        "mean": 44.4,
+        "stddev": 24.1166,
+        "min": 25.3,
+        "max": 71.5
+      },
+      "tokens": {
+        "mean": 40070.6667,
+        "stddev": 11790.3558,
+        "min": 32736,
+        "max": 53671
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.67",
+      "time_seconds": "+21.1",
+      "tokens": "+4682"
+    }
+  },
+  "notes": [
+    "Consistent, discriminating signal across all 3 evals: without the skill, Claude defaults to a grouped listicle of many questions with no stated recommendation; with the skill, it asks exactly one question and always states a recommended answer. This is the skill's core value proposition and it held up in every eval, not just on average.",
+    "Eval 2's 'repo was actually explored' assertion does not discriminate — the baseline (no-skill) agent also chose to explore investor-dashboard unprompted, since it was simply given repo access and general judgment. It's a real and desirable behavior, just not one this skill is responsible for; a future iteration should either drop this assertion or rephrase it to test something the skill specifically adds (e.g. 'the one question asked is the single most decision-relevant one, not just any exploration-informed question').",
+    "With-skill runs took longer and used more tokens than baseline in every eval (mean +21.1s, +4682 tokens) — largely driven by eval 2's repo exploration in both configs, which was the single biggest cost driver overall (both with_skill and without_skill spent 2-3x longer on eval 2 than on evals 0/1). This is expected overhead for a 'look things up yourself instead of asking' skill design, not a red flag, but worth watching as the skill scales to bigger repos.",
+    "n=1 per configuration — no real variance data. The pass-rate delta (100% vs 33%) is a strong and consistent single-sample signal, but a follow-up iteration should run each eval 2-3x per configuration before treating the timing/token deltas as stable."
+  ]
+}

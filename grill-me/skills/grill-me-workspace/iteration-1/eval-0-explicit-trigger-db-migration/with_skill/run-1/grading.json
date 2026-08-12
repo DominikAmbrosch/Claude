@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "The response asks exactly one question of the user, not a list of several questions at once",
+      "passed": true,
+      "evidence": "The response asks a single question ('Was ist der primäre Treiber für die Multi-Region-Replikation?'), offering (a)-(d) as answer options to that one question, then closes with a one-sentence restatement of the same question. No second, independent question is introduced."
+    },
+    {
+      "text": "The response includes a concrete recommended answer for that question",
+      "passed": true,
+      "evidence": "\"Meine Empfehlung: Ich würde erstmal von (a) Disaster Recovery ausgehen, kombiniert mit (b) als Nebeneffekt.\" with a reasoned justification."
+    },
+    {
+      "text": "The response does not begin implementation work (no migration scripts, config, or commands)",
+      "passed": true,
+      "evidence": "No code, commands, or config appear anywhere in the response — purely a question plus rationale."
+    },
+    {
+      "text": "The response explicitly ends by waiting for the user's answer rather than assuming one and moving on",
+      "passed": true,
+      "evidence": "Final line: \"Was ist bei euch der Haupttreiber – und ist es einer oder eine Kombination?\" — a direct handoff back to the user, no assumed answer."
+    }
+  ],
+  "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0},
+  "execution_metrics": {
+    "total_tool_calls": 5,
+    "output_chars": 1225
+  },
+  "timing": {"executor_duration_seconds": 59.0}
+}

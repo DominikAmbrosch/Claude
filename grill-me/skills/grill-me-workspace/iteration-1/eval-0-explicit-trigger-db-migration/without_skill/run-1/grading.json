@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "The response asks exactly one question of the user, not a list of several questions at once",
+      "passed": false,
+      "evidence": "The response asks 14 numbered questions grouped into 4 thematic clusters (Ziel, Konsistenz/Failover, Migration, Zeitplan/Betrieb)."
+    },
+    {
+      "text": "The response includes a concrete recommended answer for that question",
+      "passed": false,
+      "evidence": "No recommendation is offered for any of the 14 questions — it only asks and invites the user to answer 'the top three or four'."
+    },
+    {
+      "text": "The response does not begin implementation work (no migration scripts, config, or commands)",
+      "passed": true,
+      "evidence": "No code, commands, or config appear — purely questions."
+    },
+    {
+      "text": "The response explicitly ends by waiting for the user's answer rather than assuming one and moving on",
+      "passed": true,
+      "evidence": "Ends with \"Beantworte gern erstmal die für dich wichtigsten drei oder vier davon – dann können wir gezielt in die Tiefe gehen\" — waits for the user."
+    }
+  ],
+  "summary": {"passed": 2, "failed": 2, "total": 4, "pass_rate": 0.5},
+  "execution_metrics": {
+    "total_tool_calls": 2,
+    "output_chars": 3368
+  },
+  "timing": {"executor_duration_seconds": 36.4}
+}

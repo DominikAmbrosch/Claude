@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "The response applies the grill-me one-question-at-a-time interview pattern despite the user not saying 'grill mich' literally",
+      "passed": true,
+      "evidence": "Response explicitly frames itself as an interview: \"Ich werde dich Schritt für Schritt zu allen relevanten Aspekten befragen – eine Frage nach der anderen, jeweils mit meiner Einschätzung...\" and the transcript confirms the executor matched the request to the skill's 'stresstest my plan' trigger condition even without the literal phrase."
+    },
+    {
+      "text": "The response asks exactly one question, not a list of several questions at once",
+      "passed": true,
+      "evidence": "Only one question is asked: 'Wie weit ist die Idee bereits validiert?'"
+    },
+    {
+      "text": "The response includes a concrete recommended answer for that question",
+      "passed": true,
+      "evidence": "\"Meine Empfehlung: Wenn du noch keine zahlenden Nutzer oder zumindest sehr belastbare Validierungssignale hast, würde ich das als den kritischsten Blocker einstufen...\""
+    },
+    {
+      "text": "The response does not jump straight to generic startup advice or a listicle of considerations",
+      "passed": true,
+      "evidence": "No listicle — the response is a single targeted question with rationale, not a checklist of startup considerations."
+    }
+  ],
+  "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0},
+  "execution_metrics": {
+    "total_tool_calls": 4,
+    "output_chars": 1321
+  },
+  "timing": {"executor_duration_seconds": 42.3}
+}

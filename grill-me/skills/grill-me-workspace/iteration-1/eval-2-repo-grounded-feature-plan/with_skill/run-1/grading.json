@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "The response shows evidence the repo was actually explored (references real file/component/type names from investor-dashboard, not generic placeholders)",
+      "passed": true,
+      "evidence": "Cites real symbols: ModuleId, App.tsx, Sidebar.tsx, PortfolioDashboard.tsx, PortfolioHolding, mockBenchmarks.ts / BenchmarkId, getStockProfile in mockStocks.ts — all real names confirmed present in the repo."
+    },
+    {
+      "text": "The response asks exactly one question of the user, not a list of several questions at once",
+      "passed": true,
+      "evidence": "Ends with a single question ('Stimmst du dieser Grundrichtung zu...?') framed with two alternative answers, not a separate list of unrelated questions."
+    },
+    {
+      "text": "The response includes a concrete recommended answer for that question",
+      "passed": true,
+      "evidence": "\"Meine Empfehlung: Krypto als eigenen neuen Tab (ModuleId: 'crypto' o.ä.) anlegen...\" with concrete reasoning."
+    },
+    {
+      "text": "The question asked is a genuine judgment call, not something discoverable by reading the repo",
+      "passed": true,
+      "evidence": "The tab-vs-integration product decision is not something the codebase itself resolves — it depends on the user's product intent, which the response correctly treats as needing to be asked rather than inferred."
+    }
+  ],
+  "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0},
+  "execution_metrics": {
+    "total_tool_calls": 16,
+    "output_chars": 2752
+  },
+  "timing": {"executor_duration_seconds": 95.2}
+}

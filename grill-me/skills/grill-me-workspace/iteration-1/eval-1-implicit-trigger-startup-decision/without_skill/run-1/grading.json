@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "The response applies the grill-me one-question-at-a-time interview pattern despite the user not saying 'grill mich' literally",
+      "passed": false,
+      "evidence": "No skill was loaded (baseline); the response groups roughly 10 questions into 4 categories (Finanzen & Risiko, Produkt & Markt, Du als Gründer, Timing) instead of asking one question at a time."
+    },
+    {
+      "text": "The response asks exactly one question, not a list of several questions at once",
+      "passed": false,
+      "evidence": "Approximately 10 questions are asked across 4 sections."
+    },
+    {
+      "text": "The response includes a concrete recommended answer for that question",
+      "passed": false,
+      "evidence": "No explicit recommendation is given for any individual question — it only asks and requests 'grobe Antworten' before offering any view."
+    },
+    {
+      "text": "The response does not jump straight to generic startup advice or a listicle of considerations",
+      "passed": false,
+      "evidence": "The response is structured as exactly this kind of listicle: four labeled sections, each a bullet list of considerations/questions."
+    }
+  ],
+  "summary": {"passed": 0, "failed": 4, "total": 4, "pass_rate": 0.0},
+  "execution_metrics": {
+    "total_tool_calls": 2,
+    "output_chars": 2108
+  },
+  "timing": {"executor_duration_seconds": 25.3}
+}
